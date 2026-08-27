@@ -1,1 +1,0 @@
-Pokonya itulah
