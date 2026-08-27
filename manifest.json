@@ -1,0 +1,13 @@
+{
+  "name": "Log Kanvasing",
+  "short_name": "Kanvasing",
+  "description": "Aplikasi pencatatan hasil kanvasing sales mesin laser",
+  "start_url": "./canvassing-log.html",
+  "display": "standalone",
+  "background_color": "#15181a",
+  "theme_color": "#15181a",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
