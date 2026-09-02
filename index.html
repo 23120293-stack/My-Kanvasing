@@ -189,6 +189,21 @@
   .stat-icon{font-size:16px; margin-bottom:6px; opacity:0.85;}
   .stat-num{font-size:21px; font-weight:800; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
   .stat-label{font-size:10px; color:var(--steel); margin-top:3px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;}
+
+  .pagination{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    margin-top:18px; margin-bottom:8px;
+  }
+  .page-btn{
+    background:var(--graphite); border:1px solid var(--line); color:var(--paper);
+    width:38px; height:38px; border-radius:11px; font-size:16px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .page-btn:disabled{opacity:0.35;}
+  .page-info{
+    font-size:12.5px; color:var(--steel); font-weight:700; font-family:'Plus Jakarta Sans',sans-serif;
+    min-width:76px; text-align:center;
+  }
 </style>
 </head>
 <body>
@@ -330,6 +345,7 @@
       <input type="text" id="search-input" placeholder="Cari perusahaan, daerah, atau nama...">
     </div>
     <div id="list-container"></div>
+    <div class="pagination" id="pagination"></div>
     <button class="btn-secondary" id="btn-export">⬇ Export ke Excel (untuk Sheets)</button>
   </div>
 </main>
@@ -344,6 +360,8 @@ let editingId = null;
 let kebutuhanSelected = [];
 let currentLat = null;
 let currentLng = null;
+let currentPage = 1;
+const PAGE_SIZE = 10;
 
 const $ = id => document.getElementById(id);
 
@@ -635,10 +653,18 @@ function renderList(filter=''){
 
   if(filtered.length === 0){
     container.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Belum ada data kanvasing.<br>Isi form di tab "Catat Baru" untuk mulai mencatat.</div>';
+    $('pagination').innerHTML = '';
     return;
   }
 
-  container.innerHTML = filtered.map(r => {
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  if(currentPage > totalPages) currentPage = totalPages;
+  if(currentPage < 1) currentPage = 1;
+
+  const startIdx = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+
+  container.innerHTML = pageItems.map(r => {
     const initial = (r.perusahaan||'?').trim().charAt(0).toUpperCase();
     return `
     <div class="card" data-id="${r.id}">
@@ -666,6 +692,30 @@ function renderList(filter=''){
     </div>
   `;
   }).join('');
+
+  // ---------- Pagination controls ----------
+  const pag = $('pagination');
+  if(totalPages <= 1){
+    pag.innerHTML = '';
+  }else{
+    pag.innerHTML = `
+      <button class="page-btn" id="page-prev" ${currentPage === 1 ? 'disabled' : ''}>‹</button>
+      <div class="page-info">Hal ${currentPage} / ${totalPages}</div>
+      <button class="page-btn" id="page-next" ${currentPage === totalPages ? 'disabled' : ''}>›</button>
+    `;
+    const prevBtn = $('page-prev');
+    const nextBtn = $('page-next');
+    if(prevBtn) prevBtn.addEventListener('click', ()=>{
+      currentPage--;
+      renderList(filter);
+      $('list-container').scrollIntoView({behavior:'smooth', block:'start'});
+    });
+    if(nextBtn) nextBtn.addEventListener('click', ()=>{
+      currentPage++;
+      renderList(filter);
+      $('list-container').scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  }
 
   container.querySelectorAll('.edit-btn').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
@@ -726,6 +776,7 @@ async function deleteRecord(id){
 }
 
 $('search-input').addEventListener('input', (e)=>{
+  currentPage = 1;
   renderList(e.target.value);
 });
 
