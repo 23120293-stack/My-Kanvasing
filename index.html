@@ -334,6 +334,7 @@
       </div>
       <button class="btn-secondary" id="btn-save-sync" style="margin-top:0;">Simpan Koneksi</button>
       <button class="btn-secondary" id="btn-pull-sync">⬇ Tarik Ulang Riwayat dari Sheets</button>
+      <button class="btn-secondary" id="btn-reset-local" style="color:#ff6b6b; border-color:rgba(255,107,107,0.35);">🗑️ Hapus Semua Riwayat Lokal (di HP ini)</button>
     </div>
 
     <div class="stat-row">
@@ -473,6 +474,15 @@ async function pullFromSheets(){
 }
 
 $('btn-pull-sync').addEventListener('click', pullFromSheets);
+
+$('btn-reset-local').addEventListener('click', async ()=>{
+  if(!confirm('Yakin mau hapus SEMUA riwayat kanvasing di HP ini? Data yang sudah tersambung di Google Sheets tidak akan terhapus, ini cuma menghapus salinan lokal di aplikasi.')) return;
+  records = [];
+  currentPage = 1;
+  await saveRecords();
+  renderList();
+  showToast('Riwayat lokal berhasil dikosongkan');
+});
 
 // ---------- Load ----------
 async function loadRecords(){
